@@ -5,9 +5,13 @@ knitr::opts_chunk$set(
 )
 
 ## ---- eval = FALSE------------------------------------------------------------
-#  devtools::install_github("warint/iriR")
+#  install.packages("iriR")
 
-## ---- echo=FALSE--------------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
+#  install.packages("remotes")
+#  remotes::install_github("warint/iriR")
+
+## ----echo=FALSE---------------------------------------------------------------
 library(iriR)
 
 ## ---- eval = FALSE------------------------------------------------------------
@@ -29,7 +33,7 @@ library(iriR)
 #  
 #  irir_company(company = "Samsung") # A list with all the variables including "Samsung" will be produced
 #  
-#  irir_company("Samsung") # A list with all the variables including "Samsung" will be produced
+#  irir_indicator("Samsung") # A list with all the variables including "Samsung" will be produced
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  irir_industry() # A list of all companies will be produced
