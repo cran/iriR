@@ -1,7 +1,13 @@
 # Loading data
 url <- paste0("https://warin.ca/datalake/iriR/iri_data.csv")
 path <- file.path(tempdir(), "temp.csv")
-curl::curl_download(url, path)
+if (httr::http_error(url)) { # network is down = message (not an error anymore)
+  message("No Internet connection or the server is in maintenance mode.")
+  return(NULL)
+} else { # network is up = proceed to download via curl
+  message("iriR: downloading remote dataset.")
+  with(options(timeout = max(300, getOption("timeout"))),curl::curl_download(url, path))
+} # /if - network up or down
 # Reading data
 csv_file <- file.path(paste0(tempdir(), "/temp.csv"))
 IRI_data <- read.csv(csv_file)
@@ -9,7 +15,13 @@ IRI_data <- read.csv(csv_file)
 # Loading indicators
 url <- paste0("https://warin.ca/datalake/iriR/iri_indicator.csv")
 path <- file.path(tempdir(), "temp.csv")
-curl::curl_download(url, path)
+if (httr::http_error(url)) { # network is down = message (not an error anymore)
+  message("No Internet connection or the server is in maintenance mode.")
+  return(NULL)
+} else { # network is up = proceed to download via curl
+  message("iriR: downloading remote dataset.")
+  with(options(timeout = max(300, getOption("timeout"))),curl::curl_download(url, path))
+} # /if - network up or down
 csv_file <- file.path(paste0(tempdir(), "/temp.csv"))
 IRI_indicator <- read.csv(csv_file)
 
@@ -227,7 +239,8 @@ irir_visual <- function(country = "CAN", chart = "bar_1", title = TRUE, years = 
   }
 
   if(chart == "bar_1"){
-    barchart1 <- IRI_data[, c("year", "company_name", "country_name", "country_code")]
+    barchart1 <- IRI_data[, c("year", "company_name", "country_name", "country_code","indicator_code")]
+    barchart1 <- dplyr::filter(barchart1, indicator_code == "RD.euro")
     barchart1 <- dplyr::filter(barchart1, year == years)
     barchart1$value <- 1
     barchart1 <- stats::aggregate(value ~ year + country_name + country_code, barchart1, sum, na.rm=TRUE)
@@ -311,7 +324,7 @@ irir_visual <- function(country = "CAN", chart = "bar_1", title = TRUE, years = 
         ggplot2::geom_col() +
         ggplot2::ylab("")  +
         ggplot2::xlab("") +
-        ggplot2::ggtitle(paste("R&D expenditures of the leading companies \nfor the most represented countries in", years)) +
+        ggplot2::ggtitle(paste("R&D expenditures ($US) of the leading companies \nfor the most represented countries in", years)) +
         ggplot2::theme_minimal() +
         ggsci::scale_fill_uchicago() +
         ggplot2::scale_y_continuous(labels = scales::dollar) +
@@ -332,7 +345,8 @@ irir_visual <- function(country = "CAN", chart = "bar_1", title = TRUE, years = 
         geom_text(aes(label=paste0("$", round(value/1000000000, digits = 0), " B")), vjust=-0.5, hjust = 0.5, colour = "black", size = 3.2, fontface = "bold")
     }
   } else if(chart == "line_1"){
-    linechart1 <- IRI_data[, c("year", "company_name", "country_name", "country_code")]
+    linechart1 <- IRI_data[, c("year", "company_name", "country_name", "country_code","indicator_code")]
+    linechart1 <- dplyr::filter(linechart1, indicator_code == "RD.euro")
     linechart1$value <- 1
     linechart1 <- stats::aggregate(value ~ year + country_name + country_code, linechart1, sum, na.rm=TRUE)
     linechart1 <- dplyr::arrange(linechart1, desc(year), desc(value))
@@ -342,7 +356,7 @@ irir_visual <- function(country = "CAN", chart = "bar_1", title = TRUE, years = 
         geom_line() +
         ggplot2::ylab("")  +
         ggplot2::xlab("") +
-        ggplot2::ggtitle(paste("Evolution as regards the number of leading companies \nin R&D for the", max(IRI_data$year), "most represented countries")) +
+        ggplot2::ggtitle(paste("Evolution as regards the number of leading companies \nin R&D for the most represented countries")) +
         ggplot2::theme_minimal() +
         guides(fill=FALSE) +
         ggplot2::geom_point(size = 2, stroke = 1) +
